@@ -4,8 +4,11 @@ import random
 import time
 
 pygame.init()
+pygame.font.init()
 pygame.display.set_caption("My first PyGame program")
 screen = pygame.display.set_mode((1280, 768))  # Sets resolution.
+
+font = pygame.font.Font(None, 60)
 
 screenWidth = 1280
 screenHeight = 768
@@ -83,6 +86,25 @@ class Enemy:
         self.velocity += 0.05
 
 
+w, h = backgroundImage.get_size()
+y = 0
+y1 = -h
+
+
+def rolling_background():
+    global y, y1, h
+    screen.blit(backgroundImage, (0, y))
+    screen.blit(backgroundImage, (0, y1))
+
+    y += 3
+    y1 += 3
+
+    if y > h:
+        y = -h
+    if y1 > h:
+        y1 = -h
+
+
 lives = 5
 score = 0
 
@@ -103,10 +125,11 @@ while True:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:  # Doesn't spam-fire when key is held down.
             playerInstance.fire()
 
+    if lives <= 0:
+        break
 
     # Rendering section (order matters).
-    screen.fill((150, 150, 150))  # Filling the screen with a colour.
-    screen.blit(backgroundImage, (0, 0))
+    rolling_background()
 
     if playerInstance.xPosition >= (screenWidth - 119):  # Check the position of each droplet.
         playerInstance.xPosition = (screenWidth - 119)  # Delete the droplets if they cross the bottom border.
@@ -115,7 +138,7 @@ while True:
     playerInstance.move()
     playerInstance.draw()
 
-    if time.time() - timeSinceLastEnemy > 3:
+    if time.time() - timeSinceLastEnemy > 0.5:
         enemy = Enemy(random.randint(0, screenWidth), 0, (100, 100, 100))
         enemyList.append(enemy)
         timeSinceLastEnemy = time.time()
@@ -144,4 +167,13 @@ while True:
             enemyInstance.move()  # Also move its position.
             enemyInstance.draw()  # If the droplet isn't below the bottom border, draw it on screen.
 
+    screen.blit(font.render("Score: " + str(score), True, (255, 255, 255)), (5, 5))
+    screen.blit(font.render("Lives: " + str(lives), True, (255, 255, 255)), (1120, 5))
+
     pygame.display.flip()  # 2 buffers: stuff that's going to draw, stuff that's already drawn. Flip turns the two.
+
+i = 0
+while i < 5000:
+    screen.blit(font.render("Game Over!", True, (255, 255, 255)), (500, 300))
+    pygame.display.flip()  # 2 buffers: stuff that's going to draw, stuff that's already drawn. Flip turns the two.
+    i += 1
